@@ -1,0 +1,7 @@
+# blkhistd
+
+A daemon that keeps a time stamped database of storage mappings
+
+#### Building
+required packages: make gcc systemd-devel sqlite-devel
+
