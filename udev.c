@@ -1,6 +1,7 @@
 #include <libudev.h>
 #include <sqlite3.h>
 #include <stdio.h>
+#include <string.h>
 #include <sys/select.h>
 #include <unistd.h>
 
@@ -124,8 +125,7 @@ int init_database_rows(sqlite3 *db, struct udev *udev) {
   }
 
   udev_list_entry_foreach(dev_list_entry, devices) {
-    const char *path, *tmp;
-    unsigned long long disk_size = 0;
+    const char *path;
 
     path = udev_list_entry_get_name(dev_list_entry);
     device = udev_device_new_from_syspath(udev, path);
@@ -158,7 +158,7 @@ int monitor_events(sqlite3 *db, struct udev *udev) {
   struct udev_monitor *mon;
   int fd;
   dev_t devnum;
-  char *action;
+  const char *action;
   uint64_t blkdev_size = 0;
 
   mon = udev_monitor_new_from_netlink(udev, "udev");

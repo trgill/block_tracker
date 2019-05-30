@@ -4,4 +4,4 @@
 #include <stdio.h>
 #include <sys/ioctl.h>
 
-uint64_t get_blkdev_size(char *path);
+uint64_t get_blkdev_size(const char *path);
