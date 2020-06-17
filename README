@@ -1,9 +1,9 @@
-# blkhistd
+# block_tracker
 
 A daemon that keeps a time stamped database of storage mappings
 
 #### Building
-required packages: make gcc systemd-devel sqlite-devel
+required packages: make gcc systemd-devel libpq-devel
 
 
 # Install postgres and create a database block_history
