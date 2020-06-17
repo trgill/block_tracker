@@ -257,7 +257,7 @@ int add_event(PGconn *conn, const char *event, int device_id)
   char *sql;
   int size = 0;
 
-  printf("Add event %s device id %d", event, device_id);
+  printf("Add event %s device id %d\n", event, device_id);
   /* Add "discovered" event */
   size = asprintf(&sql, "insert into events \
         (dev_history_id, event) \

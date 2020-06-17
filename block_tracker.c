@@ -6,6 +6,7 @@
 #include <unistd.h>
 
 #include "db.h"
+#include "dm.h"
 #include "udev.h"
 
 int main()
@@ -13,6 +14,7 @@ int main()
   PGconn *conn = NULL;
   int system_id;
   char *user, *password, *host, *dbname;
+  GSList *device_list;
 
   struct udev *udev;
   int exit_code = 0;
@@ -46,6 +48,9 @@ int main()
     fprintf(stderr, "DB init failed\n");
     exit(exit_code);
   };
+
+  get_devices(&device_list);
+  get_tables(device_list);
 
   monitor_events(conn, udev, system_id);
 
