@@ -3,7 +3,7 @@ CFLAGS = -g -Wall
 CFILES = blkhistd.c db.c udev.c util.c
 
 blkhistd:
-	$(CC) $(CFLAGS) $(CFILES) -o blkhistd -ludev -lsqlite3
+	$(CC) $(CFLAGS) $(CFILES) -o blkhistd -ludev -lpq -ldevmapper
 
 all: default
 

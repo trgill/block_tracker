@@ -9,8 +9,10 @@
 #include "udev.h"
 #include "util.h"
 
-int print_devs_attrs(struct udev_device *device) {
-  if (device == NULL) {
+int print_devs_attrs(struct udev_device *device)
+{
+  if (device == NULL)
+  {
     return UDEV_NULL_PARAM;
   }
   const char *str;
@@ -58,7 +60,8 @@ int print_devs_attrs(struct udev_device *device) {
 
   count = 0;
   udev_list_entry_foreach(list_entry,
-                          udev_device_get_devlinks_list_entry(device)) {
+                          udev_device_get_devlinks_list_entry(device))
+  {
     printf("link:      '%s'\n", udev_list_entry_get_name(list_entry));
     count++;
   }
@@ -67,7 +70,8 @@ int print_devs_attrs(struct udev_device *device) {
 
   count = 0;
   udev_list_entry_foreach(list_entry,
-                          udev_device_get_properties_list_entry(device)) {
+                          udev_device_get_properties_list_entry(device))
+  {
     printf("property:  '%s=%s'\n", udev_list_entry_get_name(list_entry),
            udev_list_entry_get_value(list_entry));
     count++;
@@ -88,14 +92,17 @@ int print_devs_attrs(struct udev_device *device) {
   return UDEV_OK;
 }
 
-int init_udev(struct udev **udev) {
+int init_udev(struct udev **udev)
+{
 
-  if (udev == NULL) {
+  if (udev == NULL)
+  {
     return UDEV_NULL_PARAM;
   }
 
   *udev = udev_new();
-  if (!udev) {
+  if (!udev)
+  {
     fprintf(stderr, "Cannot create udev context.\n");
     return UDEV_INIT_FAILED;
   }
@@ -103,14 +110,16 @@ int init_udev(struct udev **udev) {
   return UDEV_OK;
 }
 
-int init_database_rows(sqlite3 *db, struct udev *udev) {
+int init_database_rows(PGconn *conn, int system_id, struct udev *udev)
+{
   struct udev_device *device;
   struct udev_enumerate *enumerate;
   struct udev_list_entry *devices, *dev_list_entry;
   dev_t devnum;
 
   enumerate = udev_enumerate_new(udev);
-  if (!enumerate) {
+  if (!enumerate)
+  {
     fprintf(stderr, "Cannot create enumerate context.\n");
     return UDEV_ENUMERATE_CONTEXT_FAILED;
   }
@@ -119,12 +128,14 @@ int init_database_rows(sqlite3 *db, struct udev *udev) {
   udev_enumerate_scan_devices(enumerate);
 
   devices = udev_enumerate_get_list_entry(enumerate);
-  if (!devices) {
+  if (!devices)
+  {
     fprintf(stderr, "Failed to get device list.\n");
     return UDEV_GET_LIST_FAILED;
   }
 
-  udev_list_entry_foreach(dev_list_entry, devices) {
+  udev_list_entry_foreach(dev_list_entry, devices)
+  {
     const char *path;
 
     path = udev_list_entry_get_name(dev_list_entry);
@@ -134,13 +145,14 @@ int init_database_rows(sqlite3 *db, struct udev *udev) {
     print_devs_attrs(device);
 
     if (update_row(
-            db, NULL, udev_device_get_syspath(device),
+            conn, system_id, NULL, udev_device_get_syspath(device),
             udev_device_get_devpath(device), udev_device_get_subsystem(device),
             udev_device_get_devtype(device), udev_device_get_devnode(device),
             udev_device_get_property_value(device, "ID_WWN_WITH_EXTENSION"),
             udev_device_get_property_value(device, "ID_SERIAL"), major(devnum),
             minor(devnum),
-            get_blkdev_size(udev_device_get_devnode(device))) != DB_OK) {
+            get_blkdev_size(udev_device_get_devnode(device))) != DB_OK)
+    {
       fprintf(stderr, "Database update failed.\n");
     }
 
@@ -153,7 +165,8 @@ int init_database_rows(sqlite3 *db, struct udev *udev) {
   return UDEV_OK;
 }
 
-int monitor_events(sqlite3 *db, struct udev *udev) {
+int monitor_events(PGconn *conn, struct udev *udev, int system_id)
+{
   struct udev_device *device;
   struct udev_monitor *mon;
   int fd;
@@ -166,7 +179,8 @@ int monitor_events(sqlite3 *db, struct udev *udev) {
   udev_monitor_enable_receiving(mon);
   fd = udev_monitor_get_fd(mon);
 
-  while (1) {
+  while (1)
+  {
     fd_set fds;
     struct timeval tv;
     int ret;
@@ -177,28 +191,32 @@ int monitor_events(sqlite3 *db, struct udev *udev) {
     tv.tv_usec = 0;
 
     ret = select(fd + 1, &fds, NULL, NULL, &tv);
-    if (ret > 0 && FD_ISSET(fd, &fds)) {
+    if (ret > 0 && FD_ISSET(fd, &fds))
+    {
       device = udev_monitor_receive_device(mon);
-      if (device) {
+      if (device)
+      {
         print_devs_attrs(device);
         printf("action = %s devnode = %s\n", udev_device_get_action(device),
                udev_device_get_devnode(device));
         devnum = udev_device_get_devnum(device);
         action = udev_device_get_action(device);
 
-        if (strcmp(action, "remove") != 0) {
+        if (strcmp(action, "remove") != 0)
+        {
           blkdev_size = get_blkdev_size(udev_device_get_devnode(device));
         }
 
         if (update_row(
-                db, action, udev_device_get_syspath(device),
+                conn, system_id, action, udev_device_get_syspath(device),
                 udev_device_get_devpath(device),
                 udev_device_get_subsystem(device),
                 udev_device_get_devtype(device),
                 udev_device_get_devnode(device),
                 udev_device_get_property_value(device, "ID_WWN_WITH_EXTENSION"),
                 udev_device_get_property_value(device, "ID_SERIAL"),
-                major(devnum), minor(devnum), blkdev_size) != DB_OK) {
+                major(devnum), minor(devnum), blkdev_size) != DB_OK)
+        {
           fprintf(stderr, "Database update failed.\n");
         }
 

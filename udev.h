@@ -1,8 +1,8 @@
-#include <sqlite3.h>
+#include <libpq-fe.h>
 
 int init_udev(struct udev **udev);
-int init_database_rows(sqlite3 *db, struct udev *udev);
-int monitor_events(sqlite3 *db, struct udev *udev);
+int init_database_rows(PGconn *db, int system_id, struct udev *udev);
+int monitor_events(PGconn *db, struct udev *udev, int system_id);
 
 #define UDEV_OK 0
 #define UDEV_INIT_FAILED 100

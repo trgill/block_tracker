@@ -5,3 +5,20 @@ A daemon that keeps a time stamped database of storage mappings
 #### Building
 required packages: make gcc systemd-devel sqlite-devel
 
+
+# Install postgres and create a database block_history
+
+https://developer.fedoraproject.org/tech/database/postgresql/about.html
+
+Remote postgres
+
+find / -name "postgresql.conf" - add :
+
+listen_addresses = '*'
+
+Add the following line to the end of /var/lib/pgsql/data/pg_hba.conf file:
+
+host    all             all              0.0.0.0/0                       md5
+host    all             all              ::/0  
+
+service postgresql restart
